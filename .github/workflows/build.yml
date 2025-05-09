@@ -15,19 +15,8 @@ jobs:
         with:
           fetch-depth: 0  # Required for full commit history
 
-      - name: Get current version
-        id: version
-        run: |
-          CURRENT_VERSION=$(grep '^version=' module.prop | cut -d= -f2)
-          CURRENT_CODE=$(grep '^versionCode=' module.prop | cut -d= -f2)
-          
-          # Increment versionCode and patch (assumes semver x.y.z)
-          NEW_CODE=$((CURRENT_CODE + 1))
-          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
-          NEW_VERSION="$major.$minor.$((patch + 1))"
 
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "versionCode=$NEW_CODE" >> $GITHUB_OUTPUT
+
 
       - name: Update module.prop
         run: |
