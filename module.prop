@@ -4,4 +4,3 @@ version=v1
 versionCode=1
 author=zeusofyork
 description=Systemlessly convert applications to system/priv system applications.
-minMagisk=18000
