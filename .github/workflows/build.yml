@@ -16,6 +16,26 @@ jobs:
           fetch-depth: 0  # Required for full commit history
 
 
+      - name: Calculate next version
+        id: version
+        run: |
+          CURRENT_VERSION=$(grep '^version=' module.prop | cut -d= -f2)
+          CURRENT_CODE=$(grep '^versionCode=' module.prop | cut -d= -f2)
+
+          if [ -z "$CURRENT_VERSION" ]; then
+            CURRENT_VERSION="0.0.0"
+          fi
+          if [ -z "$CURRENT_CODE" ]; then
+            CURRENT_CODE=0
+          fi
+
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          NEW_PATCH=$((patch + 1))
+          NEW_VERSION="$major.$minor.$NEW_PATCH"
+          NEW_CODE=$((CURRENT_CODE + 1))
+
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "versionCode=$NEW_CODE" >> $GITHUB_OUTPUT
 
 
       - name: Update module.prop
