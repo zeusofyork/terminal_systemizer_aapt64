@@ -221,6 +221,6 @@ set_permissions() {
   set_perm $MODPATH/mod-util.sh 0 0 0777
 
   echo "selinux=${se_value}" >> $MODPATH/module.prop
-}   
+}     
 
 # Add any additional helper functions below as needed
