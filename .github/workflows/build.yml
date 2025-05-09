@@ -15,28 +15,38 @@ jobs:
         with:
           fetch-depth: 0  # Required for full commit history
 
-
       - name: Calculate next version
         id: version
         run: |
+          # Fallback defaults
+          DEFAULT_VERSION="1.0"
+          DEFAULT_CODE=100
+
           CURRENT_VERSION=$(grep '^version=' module.prop | cut -d= -f2)
           CURRENT_CODE=$(grep '^versionCode=' module.prop | cut -d= -f2)
 
+          # Use defaults if values are empty
           if [ -z "$CURRENT_VERSION" ]; then
-            CURRENT_VERSION="1.0"
+            CURRENT_VERSION=$DEFAULT_VERSION
           fi
           if [ -z "$CURRENT_CODE" ]; then
-            CURRENT_CODE=100
+            CURRENT_CODE=$DEFAULT_CODE
           fi
 
-          # Bump minor by 1 (e.g., 1.0 → 1.1)
+          # Split into major and minor, bump minor by 1
           IFS='.' read -r major minor <<< "$CURRENT_VERSION"
+          if [ -z "$major" ] || [ -z "$minor" ]; then
+            major=1
+            minor=0
+          fi
+
           NEW_MINOR=$((minor + 1))
-          NEW_VERSION="$major.$NEW_MINOR"
+          NEW_VERSION="${major}.${NEW_MINOR}"
           NEW_CODE=$((CURRENT_CODE + 1))
 
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "versionCode=$NEW_CODE" >> $GITHUB_OUTPUT
+
 
 
 
