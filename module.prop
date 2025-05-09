@@ -1,6 +1,6 @@
 id=app_systemizer_aapt64
 name=Application Systemizer 
-version=
-versionCode=
+version=0.0.1
+versionCode=1
 author=zeusofyork
 description=Systemlessly convert applications to system/priv system applications.
