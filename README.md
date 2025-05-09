@@ -16,3 +16,7 @@ or
 
 ## Changelog
 v1 initial commit
+
+#For building new realese from actions run 
+git tag vX.X
+git push origin vX.X
