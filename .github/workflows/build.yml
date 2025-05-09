@@ -42,11 +42,19 @@ jobs:
           git tag v${{ steps.version.outputs.version }}
           git push origin HEAD --tags
 
-      - name: Generate changelog
+      - name: Generate changelog since last tag
         id: changelog
         run: |
-          LOG=$(git log -1 --pretty=format:"%s" HEAD)
-          echo "log=$LOG" >> $GITHUB_OUTPUT
+          # Get latest tag (e.g. v1.0.2)
+          LAST_TAG=$(git describe --tags --abbrev=0)
+          echo "Last tag: $LAST_TAG"
+
+          # Extract log since last tag, skip merge commits
+          LOG=$(git log "$LAST_TAG"..HEAD --no-merges --pretty=format:"- %s (%an)")
+          echo "log<<EOF" >> $GITHUB_ENV
+          echo "$LOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
 
       - name: Set zip name
         run: |
@@ -61,9 +69,8 @@ jobs:
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: Release v${{ steps.version.outputs.version }}
-          body: |
-            🔄 Changes:
-            - ${{ steps.changelog.outputs.log }}
+          body: ${{ env.log }}
           files: ${{ env.ZIP_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
