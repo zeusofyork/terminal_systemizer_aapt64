@@ -124,16 +124,16 @@ REPLACE="
 print_modname() {
   ui_print "*******************************"
   ui_print "   Terminal App Systemizer     "
-  ui_print "  by veez21 @ xda-developers   "
+  ui_print "  by zeus0fyork @ xda-developers   "
   ui_print "*******************************"
 }
 
-# Copy/extract your module files into $MODPATH in on_install.
+# Copy the module files into $MODPATH during installation
 
 on_install() {
-  # The following is the default implementation: extract $ZIPFILE/system to $MODPATH
-  # Extend/change the logic to whatever you want
-  
+  # By default, extract the system directory from the ZIP into $MODPATH
+  # You can modify this section to handle more complex install logic
+
   no_app=0
   no_privapp=0
   no_xml=0
@@ -144,37 +144,41 @@ on_install() {
 
   if [ -d $COPYPATH/system/app ]; then
     cp -af $COPYPATH/system/app $TMPDIR/$MODID
-    #additional_size=$((additional_size+$(du -ks $COPYPATH/system/app | awk '{print $1}')))
+    # Uncomment to add size to calculation
+    additional_size=$((additional_size+$(du -ks $COPYPATH/system/app | awk '{print $1}')))
   else
     no_app=1
   fi
 
   if [ -d $COPYPATH/system/priv-app ]; then
     cp -af $COPYPATH/system/priv-app $TMPDIR/$MODID
-    #additional_size=$((additional_size+$(du -ks $COPYPATH/system/priv-app | awk '{print $1}')))
+    # Uncomment to add size to calculation
+    additional_size=$((additional_size+$(du -ks $COPYPATH/system/priv-app | awk '{print $1}')))
   else
     no_privapp=1
   fi
 
   if [ -d $COPYPATH/system/etc/permissions ]; then
     cp -af $COPYPATH/system/etc/permissions $TMPDIR/$MODID
-    #additional_size=$((additional_size+$(du -ks $COPYPATH/system/etc/permissions | awk '{print $1}')))
+    # Uncomment to add size to calculation
+    additional_size=$((additional_size+$(du -ks $COPYPATH/system/etc/permissions | awk '{print $1}')))
   else
     no_xml=1
   fi
 
+  # Optionally include extra size in required module space
   #additional_size=$((additional_size / 1024 + 1))
   #reqSizeM=$((reqSizeM+additional_size))
 
-  # Perform additional stuff
+  # Check if SELinux flag is present in module.prop
   se_value=$(grep_prop selinux $COPYPATH/module.prop)
   if [ "$se_value" != "true" ]; then
     se_value=false
   fi
-  
+
   ui_print "- Extracting module files"
   unzip -o "$ZIPFILE" 'system/*' -d $MODPATH >&2
-  
+
   if [ $no_app == 0 ]; then
     cp -af $TMPDIR/$MODID/app $MODPATH/system
   fi
@@ -187,21 +191,22 @@ on_install() {
   fi
 }
 
-# Only some special files require specific permissions
-# This function will be called after on_install is done
-# The default permissions should be good enough for most cases
+# Set file and directory permissions as needed after install
+# Default permissions will be used unless overridden here
 
 set_permissions() {
-  # The following is the default rule, DO NOT remove
+  # Apply default recursive permissions
   set_perm_recursive $MODPATH 0 0 0755 0644
 
-  # Here are some examples:
+  # Example permission settings if needed:
   # set_perm_recursive  $MODPATH/system/lib       0     0       0755      0644
   # set_perm  $MODPATH/system/bin/app_process32   0     2000    0755      u:object_r:zygote_exec:s0
   # set_perm  $MODPATH/system/bin/dex2oat         0     2000    0755      u:object_r:dex2oat_exec:s0
   # set_perm  $MODPATH/system/lib/libart.so       0     0       0644
+
   cp -af $TMPDIR/aapt $MODPATH/aapt
   cp -af $TMPDIR/mod-util.sh $MODPATH/mod-util.sh
+
   bin=xbin
   if [ ! -d /system/xbin ]; then
     bin=bin
@@ -210,10 +215,12 @@ set_permissions() {
     rm -rf $MODPATH/system/xbin/*
     rmdir $MODPATH/system/xbin
   fi
+
   set_perm $MODPATH/system/$bin/systemize 0 0 0777
   set_perm $MODPATH/aapt 0 0 0777
   set_perm $MODPATH/mod-util.sh 0 0 0777
+
   echo "selinux=${se_value}" >> $MODPATH/module.prop
 }
 
-# You can add more functions to assist your custom script code
+# Add any additional helper functions below as needed
